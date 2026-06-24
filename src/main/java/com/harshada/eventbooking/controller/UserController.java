@@ -2,6 +2,7 @@ package com.harshada.eventbooking.controller;
 
 import com.harshada.eventbooking.dto.UserDTO;
 import com.harshada.eventbooking.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,7 +16,7 @@ public class UserController {
     private UserService userService;
 
     @PostMapping
-    public UserDTO createUser(@RequestBody UserDTO userDTO) {
+    public UserDTO createUser(@Valid @RequestBody UserDTO userDTO) {
         return userService.createUser(userDTO);
     }
 
@@ -29,11 +30,14 @@ public class UserController {
         return userService.getUserById(id);
     }
 
+    @PutMapping("/{id}")
+    public UserDTO updateUser(@PathVariable Long id, @Valid @RequestBody UserDTO userDTO) {
+        return userService.updateUser(id, userDTO);
+    }
+
     @DeleteMapping("/{id}")
     public String deleteUser(@PathVariable Long id) {
-
         userService.deleteUser(id);
-
         return "User deleted successfully";
     }
 }

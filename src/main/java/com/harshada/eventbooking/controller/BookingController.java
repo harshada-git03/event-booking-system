@@ -3,6 +3,7 @@ package com.harshada.eventbooking.controller;
 import com.harshada.eventbooking.dto.BookingDTO;
 import com.harshada.eventbooking.entity.Booking;
 import com.harshada.eventbooking.service.BookingService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,7 +17,7 @@ public class BookingController {
     private BookingService bookingService;
 
     @PostMapping
-    public Booking createBooking(@RequestBody BookingDTO bookingDTO) {
+    public Booking createBooking(@Valid @RequestBody BookingDTO bookingDTO) {
         return bookingService.createBooking(bookingDTO);
     }
 
@@ -32,9 +33,7 @@ public class BookingController {
 
     @DeleteMapping("/{id}")
     public String cancelBooking(@PathVariable Long id) {
-
         bookingService.cancelBooking(id);
-
         return "Booking cancelled successfully";
     }
 }

@@ -9,12 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserDTO {
-
-    private Long id;
-
-    @NotBlank(message = "Name is required")
-    private String name;
+public class LoginDTO {
 
     @NotBlank(message = "Email is required")
     @Email(message = "Invalid email format")
@@ -22,6 +17,4 @@ public class UserDTO {
 
     @NotBlank(message = "Password is required")
     private String password;
-
-    private String role;
 }

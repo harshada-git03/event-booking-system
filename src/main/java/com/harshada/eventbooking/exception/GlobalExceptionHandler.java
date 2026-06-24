@@ -2,6 +2,7 @@ package com.harshada.eventbooking.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -17,7 +18,6 @@ public class GlobalExceptionHandler {
             ResourceNotFoundException ex) {
 
         Map<String, Object> error = new HashMap<>();
-
         error.put("timestamp", LocalDateTime.now());
         error.put("status", HttpStatus.NOT_FOUND.value());
         error.put("message", ex.getMessage());
@@ -30,11 +30,29 @@ public class GlobalExceptionHandler {
             RuntimeException ex) {
 
         Map<String, Object> error = new HashMap<>();
-
         error.put("timestamp", LocalDateTime.now());
         error.put("status", HttpStatus.BAD_REQUEST.value());
         error.put("message", ex.getMessage());
 
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+    
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, Object>> handleValidationErrors(
+            MethodArgumentNotValidException ex) {
+
+        Map<String, Object> errors = new HashMap<>();
+        errors.put("timestamp", LocalDateTime.now());
+        errors.put("status", HttpStatus.BAD_REQUEST.value());
+
+        Map<String, String> fieldErrors = new HashMap<>();
+        ex.getBindingResult().getFieldErrors().forEach(error ->
+                fieldErrors.put(error.getField(), error.getDefaultMessage())
+        );
+
+        errors.put("errors", fieldErrors);
+
+        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
 }

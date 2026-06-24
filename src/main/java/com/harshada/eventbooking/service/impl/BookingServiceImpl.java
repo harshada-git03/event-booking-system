@@ -11,6 +11,7 @@ import com.harshada.eventbooking.repository.UserRepository;
 import com.harshada.eventbooking.service.BookingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -29,75 +30,57 @@ public class BookingServiceImpl implements BookingService {
     private EventRepository eventRepository;
 
     @Override
+    @Transactional
     public Booking createBooking(BookingDTO bookingDTO) {
 
-        // Fetch User
         User user = userRepository.findById(bookingDTO.getUserId())
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        // Fetch Event
         Event event = eventRepository.findById(bookingDTO.getEventId())
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Event not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Event not found"));
 
-        // Check seat availability
         if (event.getAvailableSeats() < bookingDTO.getQuantity()) {
             throw new RuntimeException("Not enough seats available");
         }
 
-        // Reduce available seats
-        event.setAvailableSeats(
-                event.getAvailableSeats() - bookingDTO.getQuantity()
-        );
-
-        // Save updated event
+        
+        event.setAvailableSeats(event.getAvailableSeats() - bookingDTO.getQuantity());
         eventRepository.save(event);
 
-        // Create Booking
         Booking booking = new Booking();
-
         booking.setUser(user);
         booking.setEvent(event);
-
         booking.setQuantity(bookingDTO.getQuantity());
-
         booking.setBookingTime(LocalDateTime.now());
-
         booking.setStatus("CONFIRMED");
-
-        // Generate booking code
         booking.setBookingCode(UUID.randomUUID().toString());
+        booking.setTotalAmount(bookingDTO.getQuantity() * event.getPrice());
 
-        // Calculate total amount
-        booking.setTotalAmount(
-                bookingDTO.getQuantity() * event.getPrice()
-        );
-
-        // Save booking
         return bookingRepository.save(booking);
     }
 
     @Override
     public List<Booking> getAllBookings() {
-
         return bookingRepository.findAll();
     }
 
     @Override
     public Booking getBookingById(Long id) {
-
         return bookingRepository.findById(id)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Booking not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
     }
 
     @Override
+    @Transactional
     public void cancelBooking(Long id) {
 
         Booking booking = bookingRepository.findById(id)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Booking not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
+
+        
+        Event event = booking.getEvent();
+        event.setAvailableSeats(event.getAvailableSeats() + booking.getQuantity());
+        eventRepository.save(event);
 
         bookingRepository.delete(booking);
     }
