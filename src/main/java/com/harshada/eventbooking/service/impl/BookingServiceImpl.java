@@ -9,6 +9,7 @@ import com.harshada.eventbooking.repository.BookingRepository;
 import com.harshada.eventbooking.repository.EventRepository;
 import com.harshada.eventbooking.repository.UserRepository;
 import com.harshada.eventbooking.service.BookingService;
+import com.harshada.eventbooking.service.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +30,9 @@ public class BookingServiceImpl implements BookingService {
     @Autowired
     private EventRepository eventRepository;
 
+    @Autowired
+    private EmailService emailService;
+
     @Override
     @Transactional
     public Booking createBooking(BookingDTO bookingDTO) {
@@ -43,7 +47,6 @@ public class BookingServiceImpl implements BookingService {
             throw new RuntimeException("Not enough seats available");
         }
 
-        
         event.setAvailableSeats(event.getAvailableSeats() - bookingDTO.getQuantity());
         eventRepository.save(event);
 
@@ -56,7 +59,12 @@ public class BookingServiceImpl implements BookingService {
         booking.setBookingCode(UUID.randomUUID().toString());
         booking.setTotalAmount(bookingDTO.getQuantity() * event.getPrice());
 
-        return bookingRepository.save(booking);
+        Booking savedBooking = bookingRepository.save(booking);
+
+        
+        emailService.sendBookingConfirmation(savedBooking);
+
+        return savedBooking;
     }
 
     @Override
@@ -78,6 +86,8 @@ public class BookingServiceImpl implements BookingService {
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
 
         
+        emailService.sendCancellationEmail(booking);
+
         Event event = booking.getEvent();
         event.setAvailableSeats(event.getAvailableSeats() + booking.getQuantity());
         eventRepository.save(event);

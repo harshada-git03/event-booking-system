@@ -1,5 +1,6 @@
 package com.harshada.eventbooking.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,7 +21,8 @@ public class User {
 
     private String email;
 
+    @JsonIgnore
     private String password;
 
-    private String role; 
+    private String role;
 }

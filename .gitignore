@@ -27,3 +27,4 @@ target/
 
 ### Application secrets ###
 application.yaml
+src/main/resources/application.properties
