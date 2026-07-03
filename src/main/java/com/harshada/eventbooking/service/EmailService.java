@@ -4,6 +4,7 @@ import com.harshada.eventbooking.entity.Booking;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,9 @@ public class EmailService {
     @Autowired
     private JavaMailSender mailSender;
 
+    @Autowired
+    private PdfTicketService pdfTicketService;
+
     public void sendBookingConfirmation(Booking booking) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
@@ -22,6 +26,13 @@ public class EmailService {
             helper.setTo(booking.getUser().getEmail());
             helper.setSubject("Booking Confirmed - " + booking.getEvent().getTitle());
             helper.setText(buildBookingEmail(booking), true);
+
+            
+            byte[] pdfBytes = pdfTicketService.generateTicket(booking);
+            helper.addAttachment(
+                "ticket-" + booking.getBookingCode() + ".pdf",
+                new ByteArrayResource(pdfBytes)
+            );
 
             mailSender.send(message);
 
@@ -50,7 +61,7 @@ public class EmailService {
         return "<div style='font-family: Arial, sans-serif; padding: 20px;'>"
                 + "<h2 style='color: #2e7d32;'>Booking Confirmed! 🎉</h2>"
                 + "<p>Hi <b>" + booking.getUser().getName() + "</b>,</p>"
-                + "<p>Your booking has been confirmed. Here are your details:</p>"
+                + "<p>Your booking has been confirmed. Please find your ticket attached to this email.</p>"
                 + "<table style='border-collapse: collapse; width: 100%;'>"
                 + "<tr><td style='padding: 8px; border: 1px solid #ddd;'><b>Booking Code</b></td>"
                 + "<td style='padding: 8px; border: 1px solid #ddd;'>" + booking.getBookingCode() + "</td></tr>"
