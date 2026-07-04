@@ -6,8 +6,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -20,13 +22,11 @@ public class EventController {
         this.eventService = eventService;
     }
 
-    // Get all events (no pagination) 
     @GetMapping("/all")
     public List<Event> getAllEvents() {
         return eventService.getAllEvents();
     }
 
-    // Get events with pagination
     @GetMapping
     public Page<Event> getEvents(
             @RequestParam(defaultValue = "0") int page,
@@ -42,6 +42,19 @@ public class EventController {
 
         return eventService.getAllEventsPaged(pageable);
     }
+
+   
+    @GetMapping("/search")
+public Page<Event> searchEvents(
+        @RequestParam(required = false) String keyword,
+        @RequestParam(required = false) String category,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size) {
+
+    return eventService.searchEvents(keyword, category, fromDate, toDate, page, size);
+}
 
     @PostMapping
     public Event createEvent(@RequestBody Event event) {

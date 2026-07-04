@@ -4,9 +4,12 @@ import com.harshada.eventbooking.entity.Event;
 import com.harshada.eventbooking.exception.ResourceNotFoundException;
 import com.harshada.eventbooking.repository.EventRepository;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Sort;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -29,6 +32,15 @@ public class EventService {
     public Page<Event> getEventsByCategory(String category, Pageable pageable) {
         return eventRepository.findByCategoryIgnoreCase(category, pageable);
     }
+
+    public Page<Event> searchEvents(String keyword, String category,
+                                 LocalDate fromDate, LocalDate toDate,
+                                 int page, int size) {
+    String from = fromDate != null ? fromDate.toString() : null;
+    String to = toDate != null ? toDate.toString() : null;
+    Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "event_date"));
+    return eventRepository.searchEvents(keyword, category, from, to, pageable);
+}
 
     public Event createEvent(Event event) {
         event.setAvailableSeats(event.getTotalSeats());
