@@ -5,7 +5,7 @@ import org.testng.annotations.BeforeClass;
 
 public class BaseApiTest {
 
-    @BeforeClass
+    @BeforeClass(alwaysRun = true)
     public void setUp() {
         String baseUrl = System.getProperty("base.url", "http://localhost:8080");
         RestAssured.baseURI = baseUrl;
